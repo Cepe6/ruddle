@@ -1,15 +1,12 @@
-package com.example.b03pleaserunserverrun;
+package com.example.ruddle;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
-
-import org.json.JSONException;
-import org.json.JSONObject;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,30 +15,27 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class Main extends Activity {
+public class Register extends Activity {
 
-    EditText name, password;
-    String Name, Password;
+    EditText name, password, email;
+    String Name, Password, Email;
     Context ctx=this;
-    String NAME=null, PASSWORD=null, EMAIL=null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
-        name = (EditText) findViewById(R.id.main_name);
-        password = (EditText) findViewById(R.id.main_password);
+        setContentView(R.layout.register);
+        name = (EditText) findViewById(R.id.register_name);
+        password = (EditText) findViewById(R.id.register_password);
+        email = (EditText) findViewById(R.id.register_email);
     }
 
-    public void main_register(View v){
-        startActivity(new Intent(this,Register.class));
-    }
-
-    public void main_login(View v){
+    public void register_register(View v){
         Name = name.getText().toString();
         Password = password.getText().toString();
+        Email = email.getText().toString();
         BackGround b = new BackGround();
-        b.execute(Name, Password);
+        b.execute(Name, Password, Email);
     }
 
     private class BackGround extends AsyncTask<String, String, String> {
@@ -50,12 +44,13 @@ public class Main extends Activity {
         protected String doInBackground(String... params) {
             String name = params[0];
             String password = params[1];
+            String email = params[2];
             String data="";
             int tmp;
 
             try {
-                URL url = new URL("http://10.0.2.2/tech/login.php");
-                String urlParams = "name="+name+"&password="+password;
+                URL url = new URL("http://10.0.2.2/tech/register.php");
+                String urlParams = "name="+name+"&password="+password+"&email="+email;
 
                 HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
                 httpURLConnection.setDoOutput(true);
@@ -63,16 +58,15 @@ public class Main extends Activity {
                 os.write(urlParams.getBytes());
                 os.flush();
                 os.close();
-
                 InputStream is = httpURLConnection.getInputStream();
                 while((tmp=is.read())!=-1){
                     data+= (char)tmp;
                 }
-
                 is.close();
                 httpURLConnection.disconnect();
 
                 return data;
+
             } catch (MalformedURLException e) {
                 e.printStackTrace();
                 return "Exception: "+e.getMessage();
@@ -84,25 +78,11 @@ public class Main extends Activity {
 
         @Override
         protected void onPostExecute(String s) {
-            String err=null;
-            try {
-                JSONObject root = new JSONObject(s);
-                JSONObject user_data = root.getJSONObject("user_data");
-                NAME = user_data.getString("name");
-                PASSWORD = user_data.getString("password");
-                EMAIL = user_data.getString("email");
-            } catch (JSONException e) {
-                e.printStackTrace();
-                err = "Exception: "+e.getMessage();
+            if(s.equals("")){
+                s="Data saved successfully.";
             }
-
-            Intent i = new Intent(ctx, Home.class);
-            i.putExtra("name", NAME);
-            i.putExtra("password", PASSWORD);
-            i.putExtra("email", EMAIL);
-            i.putExtra("err", err);
-            startActivity(i);
-
+            Toast.makeText(ctx, s, Toast.LENGTH_LONG).show();
         }
     }
+
 }

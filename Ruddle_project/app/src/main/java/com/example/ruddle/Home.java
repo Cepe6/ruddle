@@ -1,4 +1,4 @@
-package com.example.b03pleaserunserverrun;
+package com.example.ruddle;
 
 import android.app.Activity;
 import android.os.Bundle;
